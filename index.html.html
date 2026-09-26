@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projeto Digital EWM Distribuidora</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/basecoat.cdn.min.css">
+  <style>
+/* Skip artifact shell — fixed styles served beside every artifact.
+   Complements basecoat; artifacts override --accent for their own identity. */
+:root {
+  color-scheme: light dark;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --accent-text: color-mix(in srgb, var(--accent) 72%, #000);
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --text: #14171f;
+  --text-muted: #5b6472;
+  --border: rgba(20, 23, 31, 0.10);
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(20, 23, 31, 0.08);
+  --space: 16px;
+}
+/* Theme resolution. Without data-theme the viewer's system preference decides,
+   as it always did. With it, the artifact's own choice wins in BOTH directions:
+   a page that hardcodes one palette must not be handed the opposite set of
+   tokens by the machine it happens to be opened on. The dark values appear
+   twice because a media query cannot be folded into a selector list.
+   The attribute sits inside :where() so these blocks keep the specificity of a
+   bare :root — the page's own <style> is linked after this file and must go on
+   overriding any token it wants, exactly as it could before. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+    --bg: #101318;
+    --surface: #181c23;
+    --text: #eef1f6;
+    --text-muted: #9aa4b2;
+    --border: rgba(238, 241, 246, 0.12);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+:root:where([data-theme="dark"]) {
+  color-scheme: dark;
+  --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+  --bg: #101318;
+  --surface: #181c23;
+  --text: #eef1f6;
+  --text-muted: #9aa4b2;
+  --border: rgba(238, 241, 246, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+:root:where([data-theme="light"]) { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+
+.shell-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.shell-section { padding: calc(var(--space) * 2) 0; }
+.shell-grid { display: grid; gap: var(--space); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.shell-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: var(--space); }
+.shell-footer { padding: 24px 0 40px; color: var(--text-muted); font-size: 13px; }
+
+.shell-hero { padding: calc(var(--space) * 3) 0 calc(var(--space) * 2); }
+.shell-hero h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+.shell-hero p { color: var(--text-muted); max-width: 60ch; margin: 0; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space);
+}
+
+.kpi { display: flex; flex-direction: column; gap: 4px; }
+.kpi .kpi-value { font-size: 28px; font-weight: 650; line-height: 1.1; }
+.kpi .kpi-label { font-size: 13px; color: var(--text-muted); }
+.kpi .kpi-delta { font-size: 12.5px; font-weight: 600; }
+.kpi .kpi-delta.up { color: #0a8f3c; }
+.kpi .kpi-delta.down { color: #cf3131; }
+
+table.shell-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.shell-table th {
+  text-align: left; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 600;
+}
+table.shell-table th, table.shell-table td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); }
+table.shell-table td.num, table.shell-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.chart-box { width: 100%; min-height: 220px; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+
+.muted { color: var(--text-muted); }
+.accent { color: var(--accent-text); }
+.shell-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell-fade { animation: shell-fade 400ms ease both; }
+  @keyframes shell-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+</style>
+  
+  <style>
+    :root {
+      --accent: #E65100;
+      --accent-text: #B23B00;
+      --shopee: #EE4D2D;
+      --meli: #F5A623;
+      --meli-dark: #7A5200;
+      --tiktok: #E91E63;
+      --bg-warm: #F4F1EC;
+      --bg-dark: #171717;
+      --text-dark: #1E232A;
+      --surface-dark: #222222;
+      --surface-border-dark: #333333;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-warm);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+
+    /* Top presentation badge header */
+    .top-bar {
+      background: #0f0f0f;
+      color: #dedede;
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .top-bar span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Hero section */
+    .hero-wrap {
+      padding: 4rem 1.25rem 3rem;
+      text-align: center;
+      background: radial-gradient(circle at 50% 20%, rgba(255,106,0,0.08), transparent 70%);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .hero-wrap h1 {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin: 0 auto 1rem;
+      max-width: 860px;
+      color: #111827;
+    }
+    .hero-subtitle {
+      font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+      color: #4B5563;
+      max-width: 720px;
+      margin: 0 auto 2rem;
+      font-weight: 500;
+    }
+    .channel-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 2.25rem;
+    }
+    .channel-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.1rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      transition: transform 0.2s ease;
+    }
+    .channel-pill:hover {
+      transform: translateY(-2px);
+    }
+    .pill-shopee { background: #EE4D2D; color: #FFFFFF; }
+    .pill-meli { background: #FFDB15; color: #332700; }
+    .pill-tiktok { background: #010101; color: #FFFFFF; border: 1px solid #FF0050; }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Alternating section styling */
+    .section-dark {
+      background-color: var(--bg-dark);
+      color: #F3F4F6;
+      padding: 4rem 1.25rem;
+    }
+    .section-light {
+      background-color: var(--bg-warm);
+      padding: 4.5rem 1.25rem;
+    }
+    .sec-header {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 3rem;
+    }
+    .sec-tag {
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+    }
+    .sec-tag.light-theme { color: var(--accent-text); }
+    .sec-tag.dark-theme { color: #FF9B54; }
+    .sec-title {
+      font-size: clamp(1.6rem, 3.5vw, 2.35rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.75rem;
+    }
+    .sec-desc {
+      font-size: 1.05rem;
+      opacity: 0.85;
+      margin: 0;
+    }
+
+    /* Market stats numbers */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+    .stat-card {
+      background: var(--surface-dark);
+      border: 1px solid var(--surface-border-dark);
+      border-radius: var(--radius, 12px);
+      padding: 1.5rem;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover {
+      border-color: #555555;
+    }
+    .stat-number {
+      font-size: clamp(1.85rem, 3vw, 2.4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+    .stat-card:nth-child(1) .stat-number { color: #FF9E2C; }
+    .stat-card:nth-child(2) .stat-number { color: #60A5FA; }
+    .stat-card:nth-child(3) .stat-number { color: #34D399; }
+    .stat-card:nth-child(4) .stat-number { color: #F87171; }
+    .stat-card:nth-child(5) .stat-number { color: #FBBF24; }
+    .stat-card:nth-child(6) .stat-number { color: #F472B6; }
+    .stat-label {
+      font-size: 0.9rem;
+      color: #9CA3AF;
+      line-height: 1.4;
+    }
+    .stat-source {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: #6B7280;
+      display: block;
+    }
+
+    /* 4-step proposal */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+    .step-card {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: var(--radius, 12px);
+      padding: 1.75rem;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+    }
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #111827;
+      color: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+    .step-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0 0 0.6rem;
+      color: #111827;
+    }
+    .step-card p {
+      color: #4B5563;
+      font-size: 0.925rem;
+      margin: 0;
+      flex-grow: 1;
+    }
+
+    /* Marketplace channel deep-dive cards */
+    .channel-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+    .ch-card {
+      background: #FFFFFF;
+      border-radius: var(--radius, 14px);
+      border-top: 6px solid #ccc;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .ch-card.shopee { border-top-color: #EE4D2D; }
+    .ch-card.meli { border-top-color: #F5A623; }
+    .ch-card.tiktok { border-top-color: #FF3B83; }
+
+    .ch-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .ch-header h3 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+    .ch-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+    }
+    .ch-badge-shopee { background: #FFEBE7; color: #C22D0F; }
+    .ch-badge-meli { background: #FFF8D6; color: #7A5200; }
+    .ch-badge-tiktok { background: #FCE7F3; color: #9D174D; }
+
+    .ch-card ul {
+      margin: 1rem 0;
+      padding-left: 1.25rem;
+      color: #374151;
+      font-size: 0.925rem;
+      line-height: 1.6;
+    }
+    .ch-card li { margin-bottom: 0.4rem; }
+    .ch-card strong { color: #111827; }
+
+    /* Mockups / Identidade Visual da Loja */
+    .tiktok-content-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 340px) 1fr;
+      gap: 2.25rem;
+      align-items: start;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+    @media (max-width: 868px) {
+      .tiktok-content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .mockups-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.75rem;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+    .mockup-frame {
+      background: #FFFFFF;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 3.5px solid;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .mockup-frame:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(0,0,0,0.12);
+    }
+    .mockup-tiktok { border-color: #FF3B83; }
+    .mockup-meli { border-color: #F7C600; }
+    .mockup-shopee { border-color: #FF6A00; }
+
+    .mockup-topbar {
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #F9FAFB;
+      border-bottom: 1px solid #E5E7EB;
+      letter-spacing: -0.01em;
+    }
+    .mockup-tiktok .mockup-topbar { color: #D81B60; }
+    .mockup-meli .mockup-topbar { color: #8C6A00; }
+    .mockup-shopee .mockup-topbar { color: #D9480F; }
+
+    .mockup-screen {
+      width: 100%;
+      height: 560px;
+      background: #0c0d10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    .mockup-img {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      filter: none;
+      border: none;
+      outline: none;
+    }
+
+    /* Cronograma Executivo Interativo */
+    .cronograma-container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--surface-dark);
+      border: 1px solid var(--surface-border-dark);
+      border-radius: var(--radius, 16px);
+      padding: 2.25rem 2rem;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    }
+    .fase-switcher {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .fase-btn {
+      background: #262626;
+      color: #E5E7EB;
+      border: 1.5px solid #3F3F46;
+      padding: 0.7rem 1.35rem;
+      border-radius: 9999px;
+      font-size: 0.925rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fase-btn:hover {
+      border-color: #71717A;
+      transform: translateY(-1px);
+    }
+    /* Estilos dinâmicos da fase ativa com as cores dos canais */
+    .fase-btn.active[data-phase="fase1"] {
+      background: #FF6A00;
+      color: #FFFFFF;
+      border-color: #FF6A00;
+      box-shadow: 0 0 18px rgba(255,106,0,0.45);
+    }
+    .fase-btn.active[data-phase="fase2"] {
+      background: #F7C600;
+      color: #271E00;
+      border-color: #F7C600;
+      box-shadow: 0 0 18px rgba(247,198,0,0.45);
+    }
+    .fase-btn.active[data-phase="fase3"] {
+      background: #FF3B83;
+      color: #FFFFFF;
+      border-color: #FF3B83;
+      box-shadow: 0 0 18px rgba(255,59,131,0.45);
+    }
+    .fase-btn.active[data-phase="fase4"] {
+      background: #FF6A00;
+      color: #FFFFFF;
+      border-color: #FF6A00;
+      box-shadow: 0 0 18px rgba(255,106,0,0.45);
+    }
+
+    .fase-display-card {
+      background: #18181B;
+      border: 1px solid #2E2E33;
+      border-radius: 14px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .fase-card-accent-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #FF6A00;
+      transition: background 0.3s ease;
+    }
+    .fase-meta-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid #27272A;
+    }
+    .fase-badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.35rem 0.8rem;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.08);
+      color: #F4F4F5;
+    }
+    .fase-badge-time {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #A1A1AA;
+      background: #27272A;
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+    }
+    .fase-title-main {
+      font-size: clamp(1.4rem, 2.8vw, 1.9rem);
+      font-weight: 800;
+      color: #FFFFFF;
+      margin: 0.5rem 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+    .fase-channels-list {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .fase-ch-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      background: #27272A;
+      color: #D4D4D8;
+    }
+    .fase-tasks-list {
+      list-style: none;
+      margin: 1.5rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .fase-task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background: #202024;
+      border: 1px solid #2D2D32;
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .fase-task-item:hover {
+      border-color: #3F3F46;
+      transform: translateX(3px);
+    }
+    .fase-task-icon {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      margin-top: 1px;
+      color: #FFFFFF;
+    }
+    .fase-task-text {
+      font-size: 1rem;
+      color: #F4F4F5;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    /* Etapas clicáveis (Acordeão) da Fase */
+    .fase-accordion-item {
+      background: #202024;
+      border: 1px solid #2D2D32;
+      border-radius: 10px;
+      transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+      overflow: hidden;
+    }
+    .fase-accordion-item:hover {
+      border-color: #4B4B53;
+    }
+    .fase-accordion-item.is-open {
+      border-color: var(--fase-accent-border, rgba(255, 106, 0, 0.45));
+      background: #232328;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+    }
+    .fase-accordion-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #F4F4F5;
+      padding: 1.15rem 1.25rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      text-align: left;
+      outline: none;
+      transition: color 0.2s ease;
+    }
+    .fase-accordion-btn:focus-visible {
+      outline: 2px solid #FF6A00;
+      outline-offset: -2px;
+    }
+    .fase-accordion-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex: 1;
+    }
+    .fase-accordion-num {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: #FFFFFF;
+      background: #FF6A00;
+      flex-shrink: 0;
+    }
+    .fase-accordion-title {
+      color: #F4F4F5;
+      line-height: 1.45;
+    }
+    .fase-accordion-chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #A1A1AA;
+      flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+    }
+    .fase-accordion-item.is-open .fase-accordion-chevron {
+      transform: rotate(90deg);
+      color: var(--fase-accent-chevron, #FF9B54);
+    }
+    .fase-accordion-panel {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, padding 0.32s ease;
+      padding: 0 1.25rem;
+    }
+    .fase-accordion-item.is-open .fase-accordion-panel {
+      max-height: 700px;
+      opacity: 1;
+      padding: 0 1.25rem 1.25rem 3.45rem;
+    }
+    @media (max-width: 640px) {
+      .fase-accordion-item.is-open .fase-accordion-panel {
+        padding-left: 1.25rem;
+      }
+    }
+    .fase-detail-box {
+      border-top: 1px solid #2F2F36;
+      padding-top: 0.9rem;
+    }
+    .fase-detail-label {
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #A1A1AA;
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .fase-detail-items {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.5rem 0.75rem;
+    }
+    .fase-detail-items li {
+      font-size: 0.9rem;
+      color: #E4E4E7;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.55rem 0.85rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      line-height: 1.45;
+    }
+    .fase-detail-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #FF6A00;
+      flex-shrink: 0;
+      margin-top: 0.42rem;
+    }
+    .fase-footer-info {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: #202024;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+      color: #A1A1AA;
+      border-left: 3px solid #FF6A00;
+    }
+
+    /* Included Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+    .feature-card {
+      background: var(--surface-dark);
+      border: 1px solid var(--surface-border-dark);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .feature-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.25rem;
+    }
+    .feature-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin: 0;
+    }
+    .feature-desc {
+      color: #9CA3AF;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    /* Next Steps and Approval CTA */
+    .cta-card {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .next-steps-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+      text-align: left;
+    }
+    .next-step-box {
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .next-step-box .idx {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--accent-text);
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    .next-step-box .label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1F2937;
+    }
+
+    /* Footer */
+    footer {
+      background: #0E0E0E;
+      color: #8E8E93;
+      padding: 2.5rem 1.25rem;
+      text-align: center;
+      border-top: 1px solid #222;
+      font-size: 0.9rem;
+    }
+    .footer-author {
+      font-weight: 700;
+      color: #E5E7EB;
+      font-size: 1.05rem;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Print-specific rules */
+    @media print {
+      .top-bar, .hero-actions, .fase-switcher, .btn, .no-print {
+        display: none !important;
+      }
+      body {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+      }
+      .section-dark {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+      }
+      .stat-card, .cronograma-container, .fase-display-card, .feature-card {
+        border: 1px solid #CCC !important;
+        background: #FFF !important;
+        color: #000 !important;
+      }
+      .stat-label, .fase-task-text, .feature-desc, .fase-accordion-title, .fase-detail-items li {
+        color: #333 !important;
+      }
+      .fase-title-main, .stat-number {
+        color: #000 !important;
+      }
+      .fase-accordion-panel {
+        max-height: none !important;
+        opacity: 1 !important;
+        display: block !important;
+        padding-bottom: 0.75rem !important;
+      }
+      .fase-accordion-chevron {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar info -->
+  <aside class="top-bar" aria-label="Apresentação Comercial">
+    <span><span class="status-dot"></span> Proposta Comercial — EWM Distribuidora</span>
+    <span>Apresentador: <strong>Ehlisson Oliveira</strong></span>
+  </aside>
+
+  <!-- 1. Hero Section -->
+  <header class="hero-wrap">
+    <div class="shell-container">
+      <span class="sec-tag light-theme">Expansão de Canais 2026</span>
+      <h1>Projeto Digital EWM Distribuidora</h1>
+      <p class="hero-subtitle">
+        Presença online e vendas estruturadas em Shopee, Mercado Livre e TikTok Shop para multiplicar os canais de receita da distribuidora.
+      </p>
+
+      <div class="channel-badges" aria-label="Canais contemplados">
+        <span class="channel-pill pill-shopee">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z"/></svg>
+          Shopee
+        </span>
+        <span class="channel-pill pill-meli">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Mercado Livre
+        </span>
+        <span class="channel-pill pill-tiktok">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.86-4.49V8.58a8.28 8.28 0 0 0 4.91 1.57V6.69z"/></svg>
+          TikTok Shop
+        </span>
+      </div>
+
+      <div class="hero-actions no-print">
+        <a href="#proposta" class="btn btn-primary" style="background:#E65100; border-color:#E65100; color:#FFFFFF; padding: 0.75rem 1.6rem; font-weight: 700;">Conhecer a Proposta</a>
+        <a href="#cronograma" class="btn btn-outline" style="padding: 0.75rem 1.6rem; font-weight: 600;">Ver Cronograma Executivo</a>
+      </div>
+    </div>
+  </header>
+
+
+
+  <!-- 3. A Proposta: 4 Etapas -->
+  <section class="section-light" id="proposta">
+    <div class="shell-container">
+      <div class="sec-header">
+        <span class="sec-tag light-theme">Modelo Operacional</span>
+        <h2 class="sec-title">A Proposta de Gestão Completa</h2>
+        <p class="sec-desc">Estruturamos a operação digital em 4 etapas contínuas para a equipe da EWM focar apenas no envio dos produtos.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>Abrir lojas e contas</h3>
+          <p>Credenciamento oficial, documentação CNPJ, homologação fiscal e integrações técnicas nas três plataformas simultaneamente.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>Estruturar catálogo e preços</h3>
+          <p>Títulos otimizados para busca (SEO), fotos comerciais atrativas, fichas técnicas completas e precificação com margem protegida por canal.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>Atrair com anúncios e campanhas</h3>
+          <p>Ativação de Shopee Ads, Mercado Livre Ads e TikTok Shop Creator Program para acelerar as vendas e ranquear os anúncios orgânicos.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h3>Converter com atendimento e logística</h3>
+          <p>Respostas rápidas no pré e pós-venda, manutenção de reputação verde, despacho diário e preparação para programas Full / Coleta.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Os Três Canais em Cards -->
+  <section class="section-dark" id="canais">
+    <div class="shell-container">
+      <div class="sec-header">
+        <span class="sec-tag dark-theme">Estratégia Multicanal</span>
+        <h2 class="sec-title">Os Três Pilares da Operação</h2>
+        <p class="sec-desc">Cada canal atende a um perfil complementar de cliente, diluindo riscos e potencializando o faturamento.</p>
+      </div>
+
+      <div class="channel-cards">
+        <!-- Mercado Livre -->
+        <article class="ch-card meli">
+          <div class="ch-header">
+            <h3>Mercado Livre</h3>
+            <span class="ch-badge ch-badge-meli">Maior Ticket Médio</span>
+          </div>
+          <ul>
+            <li><strong>Ticket Médio Superior:</strong> público habituado a comprar volumes maiores com preferência por entrega garantida.</li>
+            <li><strong>Reputação como Ativo:</strong> selo MercadoLíder assegura conversão até 3x maior que vendedores comuns.</li>
+            <li><strong>Ponto de coleta próximo a empresa:</strong> XpeedInfo Informatica e Impressões - Rua Leonardo da Vinci 50, Guabirotuba.</li>
+          </ul>
+        </article>
+
+        <!-- Shopee -->
+        <article class="ch-card shopee">
+          <div class="ch-header">
+            <h3>Shopee</h3>
+            <span class="ch-badge ch-badge-shopee">Alto Volume</span>
+          </div>
+          <ul>
+            <li><strong>Volume e Giro:</strong> forte alcance em público popular com cultura diária de cupons e frete grátis.</li>
+            <li><strong>Grandes Campanhas:</strong> participação em datas duplas (ex: 7.7, 8.8, 9.9 e Black Friday) com picos de vendas.</li>
+            <li><strong>Estratégia:</strong> produtos de entrada e curva B com giro rápido para alimentar o caixa.</li>
+            <li><strong>Ponto de drop-off Shopee Xpress:</strong> Rua Lord Lovat, 105, Guabirotuba.</li>
+          </ul>
+        </article>
+
+        <!-- TikTok Shop -->
+        <article class="ch-card tiktok">
+          <div class="ch-header">
+            <h3>TikTok Shop</h3>
+            <span class="ch-badge ch-badge-tiktok">Viral e Vídeos</span>
+          </div>
+          <ul>
+            <li><strong>Vídeos Curtos Demonstrativos:</strong> apresentação dinâmica dos produtos da EWM em uso real.</li>
+            <li><strong>Viralização Instantânea:</strong> produtos podem saltar de zero a centenas de pedidos diários com um único vídeo de sucesso.</li>
+            <li><strong>Lançamento Brasileiro:</strong> explosão com mais de 102x de tração desde a chegada em maio de 2025.</li>
+            <li><strong>Ponto de coleta a ser definido no cadastro da loja.</strong></li>
+          </ul>
+        </article>
+      </div>
+
+      <!-- Bloco de Destaque: Postagem Correios -->
+      <div style="max-width: 1140px; margin: 1.75rem auto 0; background: #202024; border: 1px solid #333333; border-left: 4px solid #F5A623; border-radius: 10px; padding: 1.15rem 1.35rem; color: #E5E7EB; font-size: 0.95rem; line-height: 1.5; display: flex; align-items: center; gap: 0.85rem;">
+        <span style="font-size: 1.35rem; flex-shrink: 0;" aria-hidden="true">📍</span>
+        <span>Caso seja postagem pelos Correios, o ponto mais próximo é no endereço: <strong>Avenida Comendador Franco, 2550</strong>.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Demonstração: Identidade Visual da Loja -->
+  <section class="section-light" id="como-ficara">
+    <div class="shell-container">
+      <div class="sec-header">
+        <span class="sec-tag light-theme">DEMONSTRAÇÃO</span>
+        <h2 class="sec-title">Identidade Visual da Loja</h2>
+        <p class="sec-desc">Como ficarão as páginas da EWM em cada canal</p>
+      </div>
+
+      <div class="mockups-grid">
+        <!-- Card 1: TikTok Shop -->
+        <div class="mockup-frame mockup-tiktok">
+          <div class="mockup-topbar">
+            <span>TikTok Shop</span>
+          </div>
+          <div class="mockup-screen">
+            <img id="mockup-img-tiktok" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAIcAQMAAACi0R2XAAAABlBMVEUAAAA/O4N+vVnRAAAAUklEQVR42mNkGAWjYBSMglEwCkbBKBgFoyAWsDAwMDDI/z8w7D9QDfH/f0D+Hzh84DC8H47D8RkFowAVjIJRMApGwSgYBaNgFIyCUUBDAAAfSgbB7n9c5AAAAABJRU5ErkJggg==" alt="Demonstração visual da loja EWM no TikTok Shop" class="mockup-img">
+          </div>
+        </div>
+
+        <!-- Card 2: Mercado Livre -->
+        <div class="mockup-frame mockup-meli">
+          <div class="mockup-topbar">
+            <span>Mercado Livre</span>
+          </div>
+          <div class="mockup-screen">
+            <img id="mockup-img-meli" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAIcAQMAAACi0R2XAAAABlBMVEUA/+b/2/ZgT93DAAAAUUlEQVR42mNkGAWjYBSMglEwCkbBKBgFoyAWsDAwMDDI/z8w7D9QDfH/f0D+Hzh84DC8H47D8RkFowAVjIJRMApGwSgYBaNgFIyCUUBDAAAfSgbB7n9c5AAAAABJRU5ErkJggg==" alt="Demonstração visual do anúncio EWM no Mercado Livre" class="mockup-img">
+          </div>
+        </div>
+
+        <!-- Card 3: Shopee -->
+        <div class="mockup-frame mockup-shopee">
+          <div class="mockup-topbar">
+            <span>Shopee</span>
+          </div>
+          <div class="mockup-screen">
+            <img id="mockup-img-shopee" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAIcAQMAAACi0R2XAAAABlBMVEUA7k3/k/Xl567RAAAAUUlEQVR42mNkGAWjYBSMglEwCkbBKBgFoyAWsDAwMDDI/z8w7D9QDfH/f0D+Hzh84DC8H47D8RkFowAVjIJRMApGwSgYBaNgFIyCUUBDAAAfSgbB7n9c5AAAAABJRU5ErkJggg==" alt="Demonstração visual da vitrine EWM na Shopee" class="mockup-img">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5.5. TikTok: Conteúdo que Vende -->
+  <section class="section-dark" id="tiktok-conteudo" style="border-top: 1px solid #282828;">
+    <div class="shell-container">
+      <div class="sec-header">
+        <span class="sec-tag dark-theme" style="color: #FF3B83;">REDES SOCIAIS & DIVULGAÇÃO</span>
+        <h2 class="sec-title">TikTok: Conteúdo que Vende</h2>
+        <p class="sec-desc">A página de divulgação e postagem constante da EWM para atrair audiência e converter em vendas diárias.</p>
+      </div>
+
+      <div class="tiktok-content-grid">
+        <!-- Coluna Esquerda: Moldura Estilo Celular com Perfil TikTok -->
+        <div class="mockup-frame mockup-tiktok" style="margin: 0 auto; max-width: 340px; width: 100%;">
+          <div class="mockup-topbar">
+            <span>@ewmdistribuidora • TikTok</span>
+          </div>
+          <div class="mockup-screen" style="height: auto; min-height: 520px; background: #010101;">
+            <img id="mockup-img-tiktok-profile" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAIcAQMAAACi0R2XAAAABlBMVEUA/+b/2/ZgT93DAAAAUUlEQVR42mNkGAWjYBSMglEwCkbBKBgFoyAWsDAwMDDI/z8w7D9QDfH/f0D+Hzh84DC8H47D8RkFowAVjIJRMApGwSgYBaNgFIyCUUBDAAAfSgbB7n9c5AAAAABJRU5ErkJggg==" alt="Perfil e Feed do TikTok da EWM Distribuidora com capas de produtos" class="mockup-img" style="object-fit: contain; width: 100%; height: auto; max-height: none; display: block;">
+          </div>
+        </div>
+
+        <!-- Coluna Direita: Estratégia de Conteúdo e Programação -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Bloco Estratégico -->
+          <div style="background: var(--surface-dark); border: 1px solid var(--surface-border-dark); border-radius: 14px; padding: 1.75rem;">
+            <p style="font-size: 1.08rem; line-height: 1.6; color: #F3F4F6; margin: 0 0 1.25rem; font-weight: 500;">
+              O <strong style="color: #FF3B83;">TikTok é o motor de descoberta da EWM</strong>. É nele que os vídeos dos produtos alcançam novos clientes todos os dias, gerando tráfego e vendas para as lojas.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                <div style="background: rgba(255,59,131,0.15); border: 1px solid rgba(255,59,131,0.4); color: #FF3B83; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; flex-shrink: 0; margin-top: 2px;">✓</div>
+                <div>
+                  <strong style="color: #FFFFFF; font-size: 0.98rem; display: block; margin-bottom: 0.2rem;">Perfil Estruturado com Identidade Clara</strong>
+                  <span style="color: #9CA3AF; font-size: 0.89rem; line-height: 1.45;">Logo oficial da EWM, selo de verificação, bio focada na proposta de valor da distribuidora e botão com chamada para a loja.</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                <div style="background: rgba(255,59,131,0.15); border: 1px solid rgba(255,59,131,0.4); color: #FF3B83; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; flex-shrink: 0; margin-top: 2px;">🏷️</div>
+                <div>
+                  <strong style="color: #FFFFFF; font-size: 0.98rem; display: block; margin-bottom: 0.2rem;">Estratégia de Capas Padronizadas (Catálogo Visual)</strong>
+                  <span style="color: #9CA3AF; font-size: 0.89rem; line-height: 1.45;">Cada vídeo conta com capa informativa e etiqueta com o nome do produto (ex: <i>Chaleira Vermelha</i>, <i>Mini ferro</i>, <i>Sanduicheira</i>), funcionando como um catálogo visual que facilita o cliente encontrar o produto desejado.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloco Programação de Postagem -->
+          <div style="background: var(--surface-dark); border: 1px solid var(--surface-border-dark); border-radius: 14px; padding: 1.75rem; border-left: 4px solid #FF3B83;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem;">
+              <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color: #FF3B83;">📅</span> Programação de Postagem
+              </h3>
+              <span style="background: #311624; color: #FF70A6; border: 1px solid #FF3B83; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 9999px;">Foco em Alcance Orgânico</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.85rem; margin-bottom: 1.25rem;">
+              <div style="background: #18181C; border: 1px solid #2B2B32; border-radius: 10px; padding: 0.85rem;">
+                <span style="font-size: 0.73rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Frequência</span>
+                <span style="font-size: 0.98rem; font-weight: 800; color: #FFFFFF;">2 a 3 vídeos por dia</span>
+              </div>
+              <div style="background: #18181C; border: 1px solid #2B2B32; border-radius: 10px; padding: 0.85rem;">
+                <span style="font-size: 0.73rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Formato</span>
+                <span style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF;">Vídeos curtos (produto em uso, unboxing e dicas)</span>
+              </div>
+              <div style="background: #18181C; border: 1px solid #2B2B32; border-radius: 10px; padding: 0.85rem;">
+                <span style="font-size: 0.73rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Capas</span>
+                <span style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF;">Etiqueta padronizada com nome do produto</span>
+              </div>
+              <div style="background: #18181C; border: 1px solid #2B2B32; border-radius: 10px; padding: 0.85rem;">
+                <span style="font-size: 0.73rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Objetivo</span>
+                <span style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF;">Alcance orgânico e direcionamento para TikTok Shop</span>
+              </div>
+            </div>
+
+            <!-- Mini-programação Semanal em Cards -->
+            <div style="background: #121215; border: 1px solid #27272F; border-radius: 10px; padding: 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: #E5E7EB; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <span>⚡ Ritmo Semanal de Postagens</span>
+                <span style="color: #34D399; font-size: 0.78rem; background: rgba(52,211,153,0.12); padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700;">Total: 17 a 19 vídeos / semana</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                <div style="background: #1C1C22; border-left: 3px solid #FF3B83; padding: 0.75rem 0.85rem; border-radius: 6px;">
+                  <strong style="color: #FFFFFF; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">Segunda a Sexta (3 vídeos/dia)</strong>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block; margin-bottom: 0.15rem;">• Manhã: Dicas & Praticidade</span>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block; margin-bottom: 0.15rem;">• Tarde: Produto em uso real</span>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block;">• Noite: Unboxing & Oferta</span>
+                </div>
+                <div style="background: #1C1C22; border-left: 3px solid #FF9E2C; padding: 0.75rem 0.85rem; border-radius: 6px;">
+                  <strong style="color: #FFFFFF; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">Fim de Semana (2 vídeos/dia)</strong>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block; margin-bottom: 0.15rem;">• Manhã: Materiais elétricos e utilidades</span>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block;">• Tarde/Noite: Destaques da semana</span>
+                </div>
+              </div>
+
+              <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid #23232A; font-size: 0.82rem; color: #9CA3AF; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                <span style="color: #FBBF24;">💡 <strong>Foco de Conteúdo:</strong></span>
+                <span>Produtos comuns de casa (chaleira, ferro, sanduicheira, utensílios) e materiais elétricos de alto giro.</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5.6. Shopee Vídeos: Produto em Movimento -->
+  <section class="section-dark" id="shopee-videos" style="border-top: 1px solid #282828;">
+    <div class="shell-container">
+      <div class="sec-header">
+        <span class="sec-tag dark-theme" style="color: #FF6A00;">CONTEÚDO &amp; DIVULGAÇÃO</span>
+        <h2 class="sec-title">Shopee Vídeos: Produto em Movimento</h2>
+        <p class="sec-desc">A aba de vídeos oficial da EWM na Shopee para transformar demonstrações práticas em compras instantâneas com link direto.</p>
+      </div>
+
+      <div class="tiktok-content-grid">
+        <!-- Coluna Esquerda: Moldura Estilo Celular com Aba de Vídeos Shopee -->
+        <div class="mockup-frame mockup-shopee" style="margin: 0 auto; max-width: 340px; width: 100%; border-color: #FF6A00;">
+          <div class="mockup-topbar">
+            <span>EWM Distribuidora • Vídeos Shopee</span>
+          </div>
+          <div class="mockup-screen" style="height: auto; min-height: 520px; background: #0c0d10;">
+            <img id="mockup-img-shopee-videos" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAIcAQMAAACi0R2XAAAABlBMVEUA7k3/k/Xl567RAAAAUUlEQVR42mNkGAWjYBSMglEwCkbBKBgFoyAWsDAwMDDI/z8w7D9QDfH/f0D+Hzh84DC8H47D8RkFowAVjIJRMApGwSgYBaNgFIyCUUBDAAAfSgbB7n9c5AAAAABJRU5ErkJggg==" alt="Aba de Vídeos da loja EWM Distribuidora na Shopee com produtos vinculados e ofertas" class="mockup-img" style="object-fit: contain; width: 100%; height: auto; max-height: none; display: block;">
+          </div>
+        </div>
+
+        <!-- Coluna Direita: Estratégia de Vídeos e Programação Semanal -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Bloco Estratégico e Elementos da Aba -->
+          <div style="background: var(--surface-dark); border: 1px solid var(--surface-border-dark); border-radius: 14px; padding: 1.75rem;">
+            <p style="font-size: 1.08rem; line-height: 1.6; color: #F3F4F6; margin: 0 0 1.25rem; font-weight: 500;">
+              A <strong style="color: #FF6A00;">aba de vídeos da Shopee é mais um canal de descoberta da EWM</strong>. Nela, os vídeos dos produtos aparecem com link direto para o anúncio, transformando visualização em compra dentro da própria plataforma.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                <div style="background: rgba(255,106,0,0.15); border: 1px solid rgba(255,106,0,0.4); color: #FF6A00; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">🛍️</div>
+                <div>
+                  <strong style="color: #FFFFFF; font-size: 0.98rem; display: block; margin-bottom: 0.2rem;">Ícone de Sacola &amp; Compra Direta no Anúncio</strong>
+                  <span style="color: #9CA3AF; font-size: 0.89rem; line-height: 1.45;">Cada vídeo traz a sacola de compras com link direto para o produto anunciado, permitindo que o cliente adicione ao carrinho sem sair do reprodutor.</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                <div style="background: rgba(255,106,0,0.15); border: 1px solid rgba(255,106,0,0.4); color: #FF6A00; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">🔥</div>
+                <div>
+                  <strong style="color: #FFFFFF; font-size: 0.98rem; display: block; margin-bottom: 0.2rem;">Capas de Alta Conversão com Gatilhos de Urgência</strong>
+                  <span style="color: #9CA3AF; font-size: 0.89rem; line-height: 1.45;">Capas padronizadas destacando o nome do produto e etiquetas de alto impacto (ex: <i>"POR: 69,99"</i>, <i>"Oferta Relâmpago"</i>, <i>"Últimas Unidades"</i>), além de contador de visualizações que transmite prova social.</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                <div style="background: rgba(255,106,0,0.15); border: 1px solid rgba(255,106,0,0.4); color: #FF6A00; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">📌</div>
+                <div>
+                  <strong style="color: #FFFFFF; font-size: 0.98rem; display: block; margin-bottom: 0.2rem;">Vídeos Principais Fixados no Topo</strong>
+                  <span style="color: #9CA3AF; font-size: 0.89rem; line-height: 1.45;">Os campeões de vendas e promoções sazonais ficam com a tag <i>"Fixado"</i> na primeira linha da vitrine, garantindo visibilidade prioritária aos visitantes da loja.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloco Programação de Postagem Shopee Vídeos -->
+          <div style="background: var(--surface-dark); border: 1px solid var(--surface-border-dark); border-radius: 14px; padding: 1.75rem; border-left: 4px solid #FF6A00;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem;">
+              <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color: #FF6A00;">📅</span> Programação de Postagem Shopee Vídeos
+              </h3>
+              <span style="background: #331A08; color: #FFA94D; border: 1px solid #FF6A00; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 9999px;">Conversão Nativa</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.85rem; margin-bottom: 1.25rem;">
+              <div style="background: #18181C; border: 1px solid #2B2B32; border-radius: 10px; padding: 0.85rem;">
+                <span style="font-size: 0.73rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Frequência</span>
+                <span style="font-size: 0.98rem; font-weight: 800; color: #FFFFFF;">2 a 3 vídeos por dia</span>
+              </div>
+              <div style="background: #18181C; border: 1px solid #2B2B32; border-radius: 10px; padding: 0.85rem;">
+                <span style="font-size: 0.73rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Formato</span>
+                <span style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF;">Vídeos curtos mostrando o produto em uso real</span>
+              </div>
+              <div style="background: #18181C; border: 1px solid #2B2B32; border-radius: 10px; padding: 0.85rem;">
+                <span style="font-size: 0.73rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Capas</span>
+                <span style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF;">Nome do produto, preço e senso de urgência</span>
+              </div>
+              <div style="background: #18181C; border: 1px solid #2B2B32; border-radius: 10px; padding: 0.85rem;">
+                <span style="font-size: 0.73rem; color: #9CA3AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Objetivo</span>
+                <span style="font-size: 0.92rem; font-weight: 700; color: #FFFFFF;">Gerar alcance e conversão direta dentro da Shopee</span>
+              </div>
+            </div>
+
+            <!-- Mini-programação Semanal em Cards -->
+            <div style="background: #121215; border: 1px solid #27272F; border-radius: 10px; padding: 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: #E5E7EB; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <span>⚡ Ritmo Semanal na Aba Shopee Vídeos</span>
+                <span style="color: #FF9E2C; font-size: 0.78rem; background: rgba(255,158,44,0.14); padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 700;">Total: 17 a 19 vídeos / semana</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                <div style="background: #1C1C22; border-left: 3px solid #FF6A00; padding: 0.75rem 0.85rem; border-radius: 6px;">
+                  <strong style="color: #FFFFFF; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">Segunda a Sexta (3 vídeos/dia)</strong>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block; margin-bottom: 0.15rem;">• Manhã: Eletroportáteis em funcionamento (café, café da manhã)</span>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block; margin-bottom: 0.15rem;">• Tarde: Utilidades domésticas e soluções para o lar</span>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block;">• Noite: Ofertas com preço de destaque e cupom Shopee</span>
+                </div>
+                <div style="background: #1C1C22; border-left: 3px solid #F5A623; padding: 0.75rem 0.85rem; border-radius: 6px;">
+                  <strong style="color: #FFFFFF; font-size: 0.88rem; display: block; margin-bottom: 0.25rem;">Fim de Semana (2 vídeos/dia)</strong>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block; margin-bottom: 0.15rem;">• Sábado: Linha de churrasco, lazer e utilidades de cozinha</span>
+                  <span style="font-size: 0.82rem; color: #9CA3AF; display: block;">• Domingo: Reposição de pilhas, aquecedores e ferros elétricos</span>
+                </div>
+              </div>
+
+              <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid #23232A; font-size: 0.82rem; color: #9CA3AF; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                <span style="color: #FF9E2C;">🎯 <strong>Mix Prioritário:</strong></span>
+                <span>Eletroportáteis e utilidades domésticas (chaleiras, ferros, sanduicheiras, aquecedores, churrasqueiras e pilhas).</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Cronograma Executivo Interativo -->
+  <section class="section-dark" id="cronograma">
+    <div class="shell-container">
+      <div class="sec-header">
+        <span class="sec-tag dark-theme">PLANO DE AÇÃO</span>
+        <h2 class="sec-title">Cronograma Executivo</h2>
+        <p class="sec-desc">Acompanhe as fases de implementação planejadas para a estruturação e crescimento das vendas digitais da EWM.</p>
+      </div>
+
+      <div class="cronograma-container">
+        <!-- Seletor de Fases Interativo -->
+        <div class="fase-switcher" role="tablist" aria-label="Selecione a fase do projeto">
+          <button type="button" class="fase-btn active" data-phase="fase1" data-color="#FF6A00" role="tab" aria-selected="true">
+            Fase 1 • Setup das Lojas
+          </button>
+          <button type="button" class="fase-btn" data-phase="fase2" data-color="#F7C600" role="tab" aria-selected="false">
+            Fase 2 • Catálogo & Preço
+          </button>
+          <button type="button" class="fase-btn" data-phase="fase3" data-color="#FF3B83" role="tab" aria-selected="false">
+            Fase 3 • Primeiras Vendas
+          </button>
+          <button type="button" class="fase-btn" data-phase="fase4" data-color="#FF6A00" role="tab" aria-selected="false">
+            Fase 4 • Escala & Otimização
+          </button>
+        </div>
+
+        <!-- Card dinâmico da Fase selecionada -->
+        <div class="fase-display-card" id="fase-card-box">
+          <div class="fase-card-accent-bar" id="fase-accent-bar"></div>
+
+          <div class="fase-meta-header">
+            <div>
+              <span class="fase-badge-tag" id="fase-tag-label">FASE 1</span>
+              <h3 class="fase-title-main" id="fase-title">Setup das Lojas</h3>
+              <div class="fase-channels-list" id="fase-channels-container">
+                <span class="fase-ch-pill">Shopee</span>
+                <span class="fase-ch-pill">Mercado Livre</span>
+                <span class="fase-ch-pill">TikTok Shop</span>
+              </div>
+            </div>
+            <div class="fase-badge-time" id="fase-timeframe">
+              Semanas 1 a 2
+            </div>
+          </div>
+
+          <!-- Lista de Entregas da Fase -->
+          <ul class="fase-tasks-list" id="fase-tasks-list">
+            <li class="fase-accordion-item is-open">
+              <button type="button" class="fase-accordion-btn" aria-expanded="true" aria-controls="step-panel-1">
+                <span class="fase-accordion-left">
+                  <span class="fase-accordion-num" style="background:#FF6A00;">1</span>
+                  <span class="fase-accordion-title">Abertura e configuração das contas na Shopee, Mercado Livre e TikTok Shop</span>
+                </span>
+                <span class="fase-accordion-chevron" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </button>
+              <div class="fase-accordion-panel" id="step-panel-1">
+                <div class="fase-detail-box">
+                  <div class="fase-detail-label">Documentos necessários:</div>
+                  <ul class="fase-detail-items">
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>CNPJ</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Inscrição estadual</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Endereço</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Contrato Social</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Cadastro Nacional da Pessoa Jurídica</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Nome do Sócio</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>CPF</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Data de nascimento</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Foto do RG ou CNH frente e verso</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+
+            <li class="fase-accordion-item">
+              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-2">
+                <span class="fase-accordion-left">
+                  <span class="fase-accordion-num" style="background:#FF6A00;">2</span>
+                  <span class="fase-accordion-title">Definição da identidade visual e materiais da loja</span>
+                </span>
+                <span class="fase-accordion-chevron" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </button>
+              <div class="fase-accordion-panel" id="step-panel-2">
+                <div class="fase-detail-box">
+                  <div class="fase-detail-label">Materiais e definições:</div>
+                  <ul class="fase-detail-items">
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Escolha de banners e capas</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Cores para divulgações de vídeos</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+
+            <li class="fase-accordion-item">
+              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-3">
+                <span class="fase-accordion-left">
+                  <span class="fase-accordion-num" style="background:#FF6A00;">3</span>
+                  <span class="fase-accordion-title">Cadastro de dados bancários</span>
+                </span>
+                <span class="fase-accordion-chevron" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </button>
+              <div class="fase-accordion-panel" id="step-panel-3">
+                <div class="fase-detail-box">
+                  <div class="fase-detail-label">Dados de recebimento:</div>
+                  <ul class="fase-detail-items">
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Conta bancária em que cairá o dinheiro das vendas</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+
+            <li class="fase-accordion-item">
+              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-4">
+                <span class="fase-accordion-left">
+                  <span class="fase-accordion-num" style="background:#FF6A00;">4</span>
+                  <span class="fase-accordion-title">Conexão com sistema</span>
+                </span>
+                <span class="fase-accordion-chevron" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </button>
+              <div class="fase-accordion-panel" id="step-panel-4">
+                <div class="fase-detail-box">
+                  <div class="fase-detail-label">Integração operacional:</div>
+                  <ul class="fase-detail-items">
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Conectar as plataformas no sistema da EWM para atualização de estoque e importação dos pedidos</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+          </ul>
+
+          <div class="fase-footer-info" id="fase-footer-info">
+            <span>🎯 <strong>Objetivo da etapa:</strong> Garantir a infraestrutura 100% pronta e homologada para iniciar a comercialização sem pendências.</span>
+            <span style="font-weight:700; color:#F4F4F5;" id="fase-progress-label">Etapa 1 de 4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. O que está incluído -->
+  <section class="section-dark" id="incluso">
+    <div class="shell-container">
+      <div class="sec-header">
+        <span class="sec-tag dark-theme">Escopo da Gestão Especializada</span>
+        <h2 class="sec-title">O Que Está Incluído no Projeto</h2>
+        <p class="sec-desc">Atuação de ponta a ponta para que a EWM Distribuidora tenha um time digital de alta performance sem inflar a folha interna.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📢</div>
+          <h3 class="feature-title">Gestão de Anúncios</h3>
+          <p class="feature-desc">Criação, monitoramento diário e calibração de campanhas patrocinadas no Shopee Ads e Mercado Livre Ads visando ROAS positivo.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3 class="feature-title">Atendimento Pré e Pós-Venda</h3>
+          <p class="feature-desc">Resposta ágil a dúvidas de clientes antes da compra e condução estratégica de trocas/devoluções para proteger a reputação.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3 class="feature-title">Relatórios Mensais</h3>
+          <p class="feature-desc">Reunião mensal executiva com balanço de faturamento, margem de contribuição, curva ABC de produtos e próximos passos operacionais.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚙️</div>
+          <h3 class="feature-title">Otimização Contínua</h3>
+          <p class="feature-desc">Testes A/B de fotos de capa, ajustes contínuos de preços em resposta à concorrência e cadastramento de novidades do estoque.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Próximos Passos e CTA Final -->
+  <section class="section-light" id="aprovacao">
+    <div class="shell-container">
+      <div class="cta-card">
+        <span class="sec-tag light-theme">Decisão Executiva</span>
+        <h2 style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; margin: 0 0 0.5rem; color:#111827;">Próximos Passos para Início</h2>
+        <p style="color: #4B5563; font-size: 1.05rem; margin-bottom: 2rem;">
+          Estamos prontos para iniciar o projeto digital e colocar a EWM Distribuidora vendendo no Shopee, Mercado Livre e TikTok Shop.
+        </p>
+
+        <div class="next-steps-list">
+          <div class="next-step-box">
+            <span class="idx">Etapa 1</span>
+            <div class="label">Aprovação Formal do Projeto</div>
+          </div>
+          <div class="next-step-box">
+            <span class="idx">Etapa 2</span>
+            <div class="label">Envio da Lista de Produtos e Materiais</div>
+          </div>
+          <div class="next-step-box">
+            <span class="idx">Etapa 3</span>
+            <div class="label">Abertura e Validação das Contas</div>
+          </div>
+          <div class="next-step-box">
+            <span class="idx">Etapa 4</span>
+            <div class="label">Início Efetivo da Operação de Vendas</div>
+          </div>
+        </div>
+
+        <div class="no-print" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" id="btn-aprovar" style="background:#E65100; border-color:#E65100; color:#FFFFFF; padding: 0.85rem 2rem; font-weight: 700; font-size: 1.05rem;">
+            Aprovar Projeto Digital EWM
+          </button>
+          <button type="button" class="btn btn-outline" onclick="window.print()" style="padding: 0.85rem 1.75rem; font-weight: 600;">
+            Imprimir / Salvar em PDF
+          </button>
+        </div>
+
+        <div id="confirm-box" class="alert alert-success" style="display:none; margin-top: 1.5rem; text-align: left;">
+          <strong>Excelente decisão!</strong> Projeto pré-aprovado pela equipe. Ehlisson Oliveira entrará em contato para formalização do contrato e alinhamento do checklist de produtos.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rodapé -->
+  <footer>
+    <div class="shell-container">
+      <div class="footer-author">Ehlisson Oliveira</div>
+      <p style="margin: 0 0 0.5rem; color:#A1A1AA;">Especialista em Comércio e Varejo • Consultor Estratégico de Marketplace</p>
+      <p style="margin: 0; font-size: 0.8rem; color:#6B7280;">
+        Documento de Apresentação Comercial preparado com exclusividade para a Diretoria e Equipe da <strong>EWM Distribuidora</strong>.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Dados das Fases do Cronograma Executivo
+    const projectPhases = {
+      fase1: {
+        tag: 'FASE 1',
+        title: 'Setup das Lojas',
+        timeframe: 'Semanas 1 a 2',
+        color: '#FF6A00',
+        channels: ['Shopee', 'Mercado Livre', 'TikTok Shop'],
+        objective: 'Garantir a infraestrutura 100% homologada e pronta para iniciar a comercialização sem pendências.',
+        progressText: 'Etapa 1 de 4',
+        steps: [
+          {
+            title: 'Abertura e configuração das contas na Shopee, Mercado Livre e TikTok Shop',
+            label: 'Documentos necessários:',
+            details: [
+              'CNPJ',
+              'Inscrição estadual',
+              'Endereço',
+              'Contrato Social',
+              'Cadastro Nacional da Pessoa Jurídica',
+              'Nome do Sócio',
+              'CPF',
+              'Data de nascimento',
+              'Foto do RG ou CNH frente e verso'
+            ]
+          },
+          {
+            title: 'Definição da identidade visual e materiais da loja',
+            label: 'Materiais e definições:',
+            details: [
+              'Escolha de banners e capas',
+              'Cores para divulgações de vídeos'
+            ]
+          },
+          {
+            title: 'Cadastro de dados bancários',
+            label: 'Dados de recebimento:',
+            details: [
+              'Conta bancária em que cairá o dinheiro das vendas'
+            ]
+          },
+          {
+            title: 'Conexão com sistema',
+            label: 'Integração operacional:',
+            details: [
+              'Conectar as plataformas no sistema da EWM para atualização de estoque e importação dos pedidos'
+            ]
+          }
+        ]
+      },
+      fase2: {
+        tag: 'FASE 2',
+        title: 'Catálogo e Precificação',
+        timeframe: 'Semanas 3 a 4',
+        color: '#F7C600',
+        channels: ['Curva ABC', 'Margens Seguras', 'Kits & Combos'],
+        objective: 'Subir o catálogo com atratividade máxima e precificação matemática por canal para proteger as margens.',
+        progressText: 'Etapa 2 de 4',
+        steps: [
+          {
+            title: 'Cadastro dos produtos com fotos e descrição',
+            label: 'O que precisa ser feito:',
+            details: [
+              'Criar fotos chamativas e com informações importantes como voltagem, dimensões e watts',
+              'Descrições com o máximo de informações do produto facilitando a compra',
+              'Vídeo demonstrativo para o cliente saber como usar e para que serve'
+            ]
+          },
+          {
+            title: 'Definição de preços, margens e estratégia por canal',
+            label: 'O que precisa ser feito:',
+            details: [
+              'Entender qual a margem para venda do produto',
+              'Definir porcentagem de comissão',
+              'Imposto sobre a venda',
+              'Valor de embalagens e etiquetas'
+            ]
+          },
+          {
+            title: 'Criação de kits e combos de produtos',
+            label: 'O que precisa ser feito:',
+            details: [
+              'Criar combos para o aumento do ticket de venda'
+            ]
+          }
+        ]
+      },
+      fase3: {
+        tag: 'FASE 3',
+        title: 'Primeiras Vendas',
+        timeframe: 'Meses 2 a 3',
+        color: '#FF3B83',
+        channels: ['Shopee Ads', 'Mercado Livre Ads', 'TikTok Creators'],
+        objective: 'Gerar tração inicial de pedidos, acumular primeiras avaliações positivas e assegurar reputação verde.',
+        progressText: 'Etapa 3 de 4',
+        tasks: [
+          'Publicação dos primeiros anúncios e campanhas',
+          'Atendimento a clientes e pós-venda',
+          'Ajustes de preço e catálogo com base nos primeiros resultados'
+        ]
+      },
+      fase4: {
+        tag: 'FASE 4',
+        title: 'Escala e Otimização',
+        timeframe: 'Meses 4 a 6',
+        color: '#FF6A00',
+        channels: ['Afiliados TikTok', 'Full / Fulfillment', 'Relatórios Mensais'],
+        objective: 'Alavancar o faturamento com campanhas pagas e expansão de afiliados, otimizando custos e giro.',
+        progressText: 'Etapa 4 de 4',
+        tasks: [
+          'Escala de campanhas pagas e parcerias com afiliados (TikTok)',
+          'Relatórios mensais de resultados',
+          'Otimização contínua de preço, catálogo e operação'
+        ]
+      }
+    };
+
+    function attachAccordionListeners(container) {
+      const accordionItems = container.querySelectorAll('.fase-accordion-item');
+      accordionItems.forEach(item => {
+        const btn = item.querySelector('.fase-accordion-btn');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+          const isOpen = item.classList.contains('is-open');
+          if (isOpen) {
+            item.classList.remove('is-open');
+            btn.setAttribute('aria-expanded', 'false');
+          } else {
+            item.classList.add('is-open');
+            btn.setAttribute('aria-expanded', 'true');
+          }
+        });
+      });
+    }
+
+    function updatePhaseDisplay(phaseKey) {
+      const data = projectPhases[phaseKey];
+      if (!data) return;
+
+      const tagEl = document.getElementById('fase-tag-label');
+      const titleEl = document.getElementById('fase-title');
+      const timeEl = document.getElementById('fase-timeframe');
+      const accentBarEl = document.getElementById('fase-accent-bar');
+      const channelsEl = document.getElementById('fase-channels-container');
+      const tasksListEl = document.getElementById('fase-tasks-list');
+      const footerEl = document.getElementById('fase-footer-info');
+      const progressEl = document.getElementById('fase-progress-label');
+
+      if (tagEl) {
+        tagEl.textContent = data.tag;
+        tagEl.style.color = data.color === '#F7C600' ? '#FFD54F' : data.color;
+      }
+      if (titleEl) titleEl.textContent = data.title;
+      if (timeEl) timeEl.textContent = data.timeframe;
+      if (accentBarEl) accentBarEl.style.background = data.color;
+
+      if (channelsEl) {
+        channelsEl.innerHTML = data.channels
+          .map(ch => `<span class="fase-ch-pill">${ch}</span>`)
+          .join('');
+      }
+
+      if (tasksListEl) {
+        tasksListEl.style.setProperty('--fase-accent-border', data.color === '#F7C600' ? 'rgba(247, 198, 0, 0.45)' : (data.color === '#FF3B83' ? 'rgba(255, 59, 131, 0.45)' : 'rgba(255, 106, 0, 0.45)'));
+        tasksListEl.style.setProperty('--fase-accent-chevron', data.color === '#F7C600' ? '#F7C600' : (data.color === '#FF3B83' ? '#FF70A6' : '#FF9B54'));
+
+        if (data.steps && data.steps.length > 0) {
+          // Renderiza itens em estilo acordeão expansível (Fase 1 e Fase 2)
+          tasksListEl.innerHTML = data.steps
+            .map((step, idx) => {
+              const num = idx + 1;
+              const isFirst = idx === 0;
+              const detailItemsHtml = step.details
+                .map(d => `<li><span class="fase-detail-dot" style="background:${data.color};"></span>${d}</li>`)
+                .join('');
+
+              return `
+                <li class="fase-accordion-item ${isFirst ? 'is-open' : ''}">
+                  <button type="button" class="fase-accordion-btn" aria-expanded="${isFirst ? 'true' : 'false'}" aria-controls="step-panel-${phaseKey}-${num}">
+                    <span class="fase-accordion-left">
+                      <span class="fase-accordion-num" style="background:${data.color}; color:${data.color === '#F7C600' ? '#261C00' : '#FFFFFF'};">${num}</span>
+                      <span class="fase-accordion-title">${step.title}</span>
+                    </span>
+                    <span class="fase-accordion-chevron" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="fase-accordion-panel" id="step-panel-${phaseKey}-${num}">
+                    <div class="fase-detail-box">
+                      <div class="fase-detail-label">${step.label || 'Detalhamento:'}</div>
+                      <ul class="fase-detail-items">
+                        ${detailItemsHtml}
+                      </ul>
+                    </div>
+                  </div>
+                </li>
+              `;
+            })
+            .join('');
+
+          attachAccordionListeners(tasksListEl);
+        } else if (data.tasks) {
+          // Renderiza tarefas tradicionais mantidas para as demais fases
+          tasksListEl.innerHTML = data.tasks
+            .map(task => `
+              <li class="fase-task-item">
+                <span class="fase-task-icon" style="background:${data.color}; color:${data.color === '#F7C600' ? '#261C00' : '#FFFFFF'};">✓</span>
+                <span class="fase-task-text">${task}</span>
+              </li>
+            `)
+            .join('');
+        }
+      }
+
+      if (footerEl) {
+        footerEl.style.borderLeftColor = data.color;
+        const objSpan = footerEl.querySelector('span:first-child');
+        if (objSpan) {
+          objSpan.innerHTML = `🎯 <strong>Objetivo da etapa:</strong> ${data.objective}`;
+        }
+      }
+      if (progressEl) progressEl.textContent = data.progressText;
+    }
+
+    // Configurações das imagens para conversão permanente e embutimento via Data URI base64
+    const storeImageConfigs = [
+      {
+        id: 'mockup-img-tiktok',
+        storageKey: 'ewm_b64_tiktok_shop_live_v1',
+        mimeType: 'image/jpeg',
+        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/jpg/Screenshot-20260925-161105-TikTok.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T225547Z&X-Amz-Expires=3600&X-Amz-Signature=bb97fa2cc647e45b026630d349168dea67b0697378737de2abb3b57eb8729816&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
+      },
+      {
+        id: 'mockup-img-meli',
+        storageKey: 'ewm_b64_meli_shop_live_v1',
+        mimeType: 'image/png',
+        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/png/adapta-image-1790297001071-3.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T225547Z&X-Amz-Expires=3600&X-Amz-Signature=a0c0d806249486a98757d57e7256d4b572521e9d8cd9ec9de41fd5dfb29bcd3b&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
+      },
+      {
+        id: 'mockup-img-shopee',
+        storageKey: 'ewm_b64_shopee_shop_live_v1',
+        mimeType: 'image/png',
+        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/png/adapta-image-1790297007424-4.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T225547Z&X-Amz-Expires=3600&X-Amz-Signature=b7ea34a442760f4e908862242abe6c3bc8fc951b07ae25f49b42211aaf93c108&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
+      },
+      {
+        id: 'mockup-img-tiktok-profile',
+        storageKey: 'ewm_b64_tiktok_profile_v2',
+        mimeType: 'image/png',
+        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/png/83867.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T224713Z&X-Amz-Expires=3600&X-Amz-Signature=61942747ffc521d23e63b9bf1ace8b76a85d879be6811ac3ed2c1a098a9114e3&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
+      },
+      {
+        id: 'mockup-img-shopee-videos',
+        storageKey: 'ewm_b64_shopee_videos_v2',
+        mimeType: 'image/png',
+        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/png/adapta-image-1790363911351-1.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T224713Z&X-Amz-Expires=3600&X-Amz-Signature=61942747ffc521d23e63b9bf1ace8b76a85d879be6811ac3ed2c1a098a9114e3&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
+      }
+    ];
+
+    function embedStoreImagesAsBase64() {
+      storeImageConfigs.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (!el) return;
+
+        // 1. Carrega imediatamente o Base64 Data URI se já persistido localmente
+        try {
+          const cached = localStorage.getItem(item.storageKey);
+          if (cached && cached.startsWith('data:image/') && cached.length > 500) {
+            el.src = cached;
+            return;
+          }
+        } catch (e) {}
+
+        // 2. Busca a imagem na URL fornecida e converte diretamente para Base64 Data URI
+        fetch(item.url)
+          .then(res => {
+            if (!res.ok) throw new Error('Status ' + res.status);
+            return res.blob();
+          })
+          .then(blob => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64Data = reader.result;
+              if (base64Data && typeof base64Data === 'string' && base64Data.startsWith('data:image/')) {
+                el.src = base64Data;
+                try {
+                  localStorage.setItem(item.storageKey, base64Data);
+                } catch (err) {}
+              }
+            };
+            reader.readAsDataURL(blob);
+          })
+          .catch(() => {
+            // Conversão de contingência via Canvas preservando proporção e integridade
+            const tempImg = new Image();
+            tempImg.crossOrigin = 'anonymous';
+            tempImg.onload = () => {
+              try {
+                const cvs = document.createElement('canvas');
+                cvs.width = tempImg.naturalWidth;
+                cvs.height = tempImg.naturalHeight;
+                const ctx = cvs.getContext('2d');
+                ctx.drawImage(tempImg, 0, 0);
+                const format = item.mimeType || 'image/png';
+                const b64 = cvs.toDataURL(format);
+                if (b64 && b64.startsWith('data:image/') && b64.length > 500) {
+                  el.src = b64;
+                  try {
+                    localStorage.setItem(item.storageKey, b64);
+                  } catch (e) {}
+                }
+              } catch (err) {}
+            };
+            tempImg.src = item.url;
+          });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Converte e embute imediatamente as imagens em base64
+      embedStoreImagesAsBase64();
+
+      // Inicialização dos acordeões da Fase 1 carregada por padrão
+      const initialTasksList = document.getElementById('fase-tasks-list');
+      if (initialTasksList) {
+        attachAccordionListeners(initialTasksList);
+      }
+
+      // Inicialização do seletor do Cronograma Executivo
+      const phaseButtons = document.querySelectorAll('.fase-btn');
+      phaseButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          phaseButtons.forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+          const phaseKey = btn.dataset.phase;
+          updatePhaseDisplay(phaseKey);
+        });
+      });
+
+      // Approval Button interaction
+      const btnAprovar = document.getElementById('btn-aprovar');
+      const confirmBox = document.getElementById('confirm-box');
+      if (btnAprovar && confirmBox) {
+        btnAprovar.addEventListener('click', () => {
+          confirmBox.style.display = 'block';
+          btnAprovar.textContent = '✓ Projeto Aprovado!';
+          btnAprovar.disabled = true;
+          btnAprovar.style.opacity = '0.85';
+          btnAprovar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      }
+    });
+  </script>
+<script>
+/* Skip artifact shell — fixed helpers served beside every artifact. */
+(function () {
+  "use strict";
+
+  var fmt = {
+    num: function (v, opts) { return new Intl.NumberFormat("pt-BR", opts || {}).format(v); },
+    brl: function (v) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v); },
+    pct: function (v) { return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(v); }
+  };
+
+  // axisFmt keeps axis tick labels short (compact notation) so long values
+  // (e.g. full BRL amounts) never clip against the plot edge.
+  function axisFmt(v) {
+    return fmt.num(v, { notation: "compact", maximumFractionDigits: 1 });
+  }
+
+  // format accepts a function OR one of the fmt names ("num" | "brl" | "pct").
+  function coerceFormat(spec) {
+    if (typeof spec === "function") return spec;
+    if (typeof spec === "string" && fmt[spec]) return fmt[spec];
+    return function (v) { return fmt.num(v); };
+  }
+
+  function accent() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2563eb";
+  }
+  function mutedColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() || "#5b6472";
+  }
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function frame(el, w, h) {
+    var svg = svgEl("svg", { viewBox: "0 0 " + w + " " + h, role: "img" });
+    el.innerHTML = "";
+    el.appendChild(svg);
+    return svg;
+  }
+
+  // maxOf guards the axis scale: empty values would give -Infinity (truthy,
+  // so "|| 1" can't catch it) and a non-positive max would flip the chart.
+  function maxOf(values) {
+    var m = values.length ? Math.max.apply(null, values) : 0;
+    return m > 0 ? m : 1;
+  }
+
+  // bar(el, {labels:[], values:[], color?, format?}) — vertical bar chart.
+  function bar(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 12, plotH = H - padT - padB;
+    var step = plotW / n, bw = Math.min(step * 0.62, 64);
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 12, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    cfg.values.forEach(function (v, i) {
+      var bh = Math.max(0, (v / max) * plotH);
+      var x = padL + i * step + (step - bw) / 2;
+      var y = padT + plotH - bh;
+      var r = svgEl("rect", { x: x, y: y, width: bw, height: bh, rx: 4, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(v);
+      r.appendChild(t);
+      svg.appendChild(r);
+      var tx = svgEl("text", { x: x + bw / 2, y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // line(el, {labels:[], values:[], color?, format?}) — single-series line.
+  function line(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 16, plotH = H - padT - padB;
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 16, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    var pts = cfg.values.map(function (v, i) {
+      var x = padL + (n === 1 ? plotW / 2 : (plotW * i) / (n - 1));
+      var y = padT + plotH - (v / max) * plotH;
+      return [x, y];
+    });
+    var d = pts.map(function (p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+    svg.appendChild(svgEl("path", { d: d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
+    pts.forEach(function (p, i) {
+      var c = svgEl("circle", { cx: p[0], cy: p[1], r: 3.5, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(cfg.values[i]);
+      c.appendChild(t);
+      svg.appendChild(c);
+      var tx = svgEl("text", { x: p[0], y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // donut(el, {labels:[], values:[], colors?}) — donut with center total.
+  function donut(el, cfg) {
+    var W = 320, H = 280, cx = W / 2, cy = H / 2, R = 92, r = 58;
+    var svg = frame(el, W, H);
+    var total = cfg.values.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var palette = cfg.colors || [accent(), "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#e87ba4"];
+    var a0 = -Math.PI / 2;
+    cfg.values.forEach(function (v, i) {
+      var a1 = a0 + (v / total) * Math.PI * 2;
+      var large = a1 - a0 > Math.PI ? 1 : 0;
+      var p = ["M", cx + R * Math.cos(a0), cy + R * Math.sin(a0),
+        "A", R, R, 0, large, 1, cx + R * Math.cos(a1), cy + R * Math.sin(a1),
+        "L", cx + r * Math.cos(a1), cy + r * Math.sin(a1),
+        "A", r, r, 0, large, 0, cx + r * Math.cos(a0), cy + r * Math.sin(a0), "Z"].join(" ");
+      var path = svgEl("path", { d: p, fill: palette[i % palette.length] });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + fmt.num(v) + " (" + fmt.pct(v / total) + ")";
+      path.appendChild(t);
+      svg.appendChild(path);
+      a0 = a1;
+    });
+    var center = svgEl("text", { x: cx, y: cy + 5, "text-anchor": "middle", "font-size": 20, "font-weight": 650, fill: "currentColor" });
+    center.textContent = fmt.num(total);
+    svg.appendChild(center);
+  }
+
+  window.skipShell = { fmt: fmt };
+  window.skipChart = { bar: bar, line: line, donut: donut };
+})();
+
+</script>
+</body>
+</html>
