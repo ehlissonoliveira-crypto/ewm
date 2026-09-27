@@ -398,6 +398,77 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
     .ch-card li { margin-bottom: 0.4rem; }
     .ch-card strong { color: #111827; }
 
+    /* Prévia do Anúncio na Shopee & Mockup Vertical */
+    .mockup-anuncio-wrapper {
+      max-width: 460px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .mockup-frame.mockup-anuncio-shopee {
+      border: 3.5px solid #FF6A00;
+      border-radius: 24px;
+      background: #FFFFFF;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .mockup-frame.mockup-anuncio-shopee:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 48px rgba(255, 106, 0, 0.15);
+    }
+    .mockup-anuncio-shopee .mockup-topbar {
+      color: #D9480F;
+      background: #FFF5EE;
+      border-bottom: 1px solid #FFE0D1;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 0.85rem 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      letter-spacing: -0.01em;
+    }
+    .mockup-anuncio-screen {
+      width: 100%;
+      height: auto;
+      background: #FFFFFF;
+      display: block;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+    .mockup-anuncio-screen .mockup-img {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      object-fit: contain;
+      display: block;
+      filter: none;
+      border: none;
+      outline: none;
+    }
+
+    /* Scroll Reveal com Fallback Seguro */
+    .reveal-ready .reveal-item {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+      will-change: opacity, transform;
+    }
+    .reveal-ready .reveal-item.is-revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal-ready .reveal-item {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
+
     /* Mockups / Identidade Visual da Loja */
     .tiktok-content-grid {
       display: grid;
@@ -531,12 +602,6 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       color: #FFFFFF;
       border-color: #FF3B83;
       box-shadow: 0 0 18px rgba(255,59,131,0.45);
-    }
-    .fase-btn.active[data-phase="fase4"] {
-      background: #FF6A00;
-      color: #FFFFFF;
-      border-color: #FF6A00;
-      box-shadow: 0 0 18px rgba(255,106,0,0.45);
     }
 
     .fase-display-card {
@@ -907,6 +972,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       .stat-label, .fase-task-text, .feature-desc, .fase-accordion-title, .fase-detail-items li {
         color: #333 !important;
       }
+      .reveal-item {
+        opacity: 1 !important;
+        transform: none !important;
+      }
       .fase-title-main, .stat-number {
         color: #000 !important;
       }
@@ -1073,7 +1142,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <span>TikTok Shop</span>
           </div>
           <div class="mockup-screen">
-          <img id="mockup-img-tiktok" src="tiktok.png" alt="Perfil TikTok Shop da EWM" class="mockup-img">
+            <img id="mockup-img-tiktok" src="tiktok.png" alt="Demonstração visual da loja EWM no TikTok Shop" class="mockup-img">
           </div>
         </div>
 
@@ -1083,7 +1152,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <span>Mercado Livre</span>
           </div>
           <div class="mockup-screen">
-          <img id="mockup-img-meli" src="mercado_livre.png" alt="Demonstração visual do anúncio EWM no Mercado Livre" class="mockup-img">
+            <img id="mockup-img-meli" src="mercado_livre.png" alt="Demonstração visual do anúncio EWM no Mercado Livre" class="mockup-img">
           </div>
         </div>
 
@@ -1093,7 +1162,152 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <span>Shopee</span>
           </div>
           <div class="mockup-screen">
-         <img id="mockup-img-shopee" src="shopee.png" alt="Perfil da loja EWM na Shopee" class="mockup-img">          </div>
+            <img id="mockup-img-shopee" src="shopee.png" alt="Demonstração visual da vitrine EWM na Shopee" class="mockup-img">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Cronograma Executivo Interativo -->
+  <section class="section-dark" id="cronograma">
+    <div class="shell-container">
+      <div class="sec-header">
+        <span class="sec-tag dark-theme">PLANO DE AÇÃO</span>
+        <h2 class="sec-title">Cronograma Executivo</h2>
+        <p class="sec-desc">Acompanhe as fases de implementação planejadas para a estruturação e crescimento das vendas digitais da EWM.</p>
+      </div>
+
+      <div class="cronograma-container">
+        <!-- Seletor de Fases Interativo -->
+        <div class="fase-switcher" role="tablist" aria-label="Selecione a fase do projeto">
+          <button type="button" class="fase-btn active" data-phase="fase1" data-color="#FF6A00" role="tab" aria-selected="true">
+            Fase 1 • Setup das Lojas
+          </button>
+          <button type="button" class="fase-btn" data-phase="fase2" data-color="#F7C600" role="tab" aria-selected="false">
+            Fase 2 • Catálogo & Preço
+          </button>
+          <button type="button" class="fase-btn" data-phase="fase3" data-color="#FF3B83" role="tab" aria-selected="false">
+            Fase 3 • Divulgação & Tráfego
+          </button>
+        </div>
+
+        <!-- Card dinâmico da Fase selecionada -->
+        <div class="fase-display-card" id="fase-card-box">
+          <div class="fase-card-accent-bar" id="fase-accent-bar"></div>
+
+          <div class="fase-meta-header">
+            <div>
+              <span class="fase-badge-tag" id="fase-tag-label">FASE 1</span>
+              <h3 class="fase-title-main" id="fase-title">Setup das Lojas</h3>
+              <p class="fase-subtitle-desc" id="fase-subtitle" style="display:none; margin:0.35rem 0 0.5rem; color:#A1A1AA; font-size:0.92rem;"></p>
+              <div class="fase-channels-list" id="fase-channels-container">
+                <span class="fase-ch-pill">Shopee</span>
+                <span class="fase-ch-pill">Mercado Livre</span>
+                <span class="fase-ch-pill">TikTok Shop</span>
+              </div>
+            </div>
+            <div class="fase-badge-time" id="fase-timeframe">
+              Semanas 1 a 2
+            </div>
+          </div>
+
+          <!-- Lista de Entregas da Fase -->
+          <ul class="fase-tasks-list" id="fase-tasks-list">
+            <li class="fase-accordion-item">
+              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-1">
+                <span class="fase-accordion-left">
+                  <span class="fase-accordion-num" style="background:#FF6A00;">1</span>
+                  <span class="fase-accordion-title">Abertura e configuração das contas na Shopee, Mercado Livre e TikTok Shop</span>
+                </span>
+                <span class="fase-accordion-chevron" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </button>
+              <div class="fase-accordion-panel" id="step-panel-1">
+                <div class="fase-detail-box">
+                  <div class="fase-detail-label">Documentos necessários:</div>
+                  <ul class="fase-detail-items">
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>CNPJ</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Inscrição estadual</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Endereço</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Contrato Social</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Cadastro Nacional da Pessoa Jurídica</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Nome do Sócio</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>CPF</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Data de nascimento</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Foto do RG ou CNH frente e verso</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+
+            <li class="fase-accordion-item">
+              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-2">
+                <span class="fase-accordion-left">
+                  <span class="fase-accordion-num" style="background:#FF6A00;">2</span>
+                  <span class="fase-accordion-title">Definição da identidade visual e materiais da loja</span>
+                </span>
+                <span class="fase-accordion-chevron" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </button>
+              <div class="fase-accordion-panel" id="step-panel-2">
+                <div class="fase-detail-box">
+                  <div class="fase-detail-label">Materiais e definições:</div>
+                  <ul class="fase-detail-items">
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Escolha de banners e capas</li>
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Cores para divulgações de vídeos</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+
+            <li class="fase-accordion-item">
+              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-3">
+                <span class="fase-accordion-left">
+                  <span class="fase-accordion-num" style="background:#FF6A00;">3</span>
+                  <span class="fase-accordion-title">Cadastro de dados bancários</span>
+                </span>
+                <span class="fase-accordion-chevron" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </button>
+              <div class="fase-accordion-panel" id="step-panel-3">
+                <div class="fase-detail-box">
+                  <div class="fase-detail-label">Dados de recebimento:</div>
+                  <ul class="fase-detail-items">
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Conta bancária em que cairá o dinheiro das vendas</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+
+            <li class="fase-accordion-item">
+              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-4">
+                <span class="fase-accordion-left">
+                  <span class="fase-accordion-num" style="background:#FF6A00;">4</span>
+                  <span class="fase-accordion-title">Conexão com sistema</span>
+                </span>
+                <span class="fase-accordion-chevron" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </button>
+              <div class="fase-accordion-panel" id="step-panel-4">
+                <div class="fase-detail-box">
+                  <div class="fase-detail-label">Integração operacional:</div>
+                  <ul class="fase-detail-items">
+                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Conectar as plataformas no sistema da EWM para atualização de estoque e importação dos pedidos</li>
+                  </ul>
+                </div>
+              </div>
+            </li>
+          </ul>
+
+          <div class="fase-footer-info" id="fase-footer-info">
+            <span>🎯 <strong>Objetivo da etapa:</strong> Garantir a infraestrutura 100% pronta e homologada para iniciar a comercialização sem pendências.</span>
+            <span style="font-weight:700; color:#F4F4F5;" id="fase-progress-label">Etapa 1 de 3</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1115,7 +1329,8 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <span>@ewmdistribuidora • TikTok</span>
           </div>
           <div class="mockup-screen" style="height: auto; min-height: 520px; background: #010101;">
-          <img id="mockup-img-tiktok-profile" src="tiktok_video.png" alt="Perfil e Feed do TikTok da EWM Distribuidora com capas de produtos" class="mockup-img" style="object-fit: contain; width: 100%; height: auto; max-height: none; display: block;">          </div>
+            <img id="mockup-img-tiktok-profile" src="tiktok_video.png" alt="Perfil e Feed do TikTok da EWM Distribuidora com capas de produtos" class="mockup-img" style="object-fit: contain; width: 100%; height: auto; max-height: none; display: block;">
+          </div>
         </div>
 
         <!-- Coluna Direita: Estratégia de Conteúdo e Programação -->
@@ -1224,7 +1439,8 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <span>EWM Distribuidora • Vídeos Shopee</span>
           </div>
           <div class="mockup-screen" style="height: auto; min-height: 520px; background: #0c0d10;">
-          <img id="mockup-img-shopee-videos" src="shopee_video.png" alt="Aba de Vídeos da loja EWM Distribuidora na Shopee com produtos vinculados e ofertas" class="mockup-img" style="object-fit: contain; width: 100%; height: auto; max-height: none; display: block;">          </div>
+            <img id="mockup-img-shopee-videos" src="shopee_video.png" alt="Aba de Vídeos da loja EWM Distribuidora na Shopee com produtos vinculados e ofertas" class="mockup-img" style="object-fit: contain; width: 100%; height: auto; max-height: none; display: block;">
+          </div>
         </div>
 
         <!-- Coluna Direita: Estratégia de Vídeos e Programação Semanal -->
@@ -1325,146 +1541,22 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
     </div>
   </section>
 
-  <!-- 6. Cronograma Executivo Interativo -->
-  <section class="section-dark" id="cronograma">
+  <!-- 5.7. Prévia do Anúncio na Shopee -->
+  <section class="section-light" id="previa-anuncio-shopee">
     <div class="shell-container">
       <div class="sec-header">
-        <span class="sec-tag dark-theme">PLANO DE AÇÃO</span>
-        <h2 class="sec-title">Cronograma Executivo</h2>
-        <p class="sec-desc">Acompanhe as fases de implementação planejadas para a estruturação e crescimento das vendas digitais da EWM.</p>
+        <span class="sec-tag light-theme" style="color: #EE4D2D;">SHOPEE NA PRÁTICA</span>
+        <h2 class="sec-title reveal-item" style="transition-delay: 0s;">Prévia do Anúncio na Shopee</h2>
+        <p class="sec-desc reveal-item" style="transition-delay: 0.15s;">Exemplo de como o anúncio da EWM aparece para o cliente na Shopee: fotos do produto, preço com oferta relâmpago, descrição detalhada e os dados da loja.</p>
       </div>
 
-      <div class="cronograma-container">
-        <!-- Seletor de Fases Interativo -->
-        <div class="fase-switcher" role="tablist" aria-label="Selecione a fase do projeto">
-          <button type="button" class="fase-btn active" data-phase="fase1" data-color="#FF6A00" role="tab" aria-selected="true">
-            Fase 1 • Setup das Lojas
-          </button>
-          <button type="button" class="fase-btn" data-phase="fase2" data-color="#F7C600" role="tab" aria-selected="false">
-            Fase 2 • Catálogo & Preço
-          </button>
-          <button type="button" class="fase-btn" data-phase="fase3" data-color="#FF3B83" role="tab" aria-selected="false">
-            Fase 3 • Primeiras Vendas
-          </button>
-          <button type="button" class="fase-btn" data-phase="fase4" data-color="#FF6A00" role="tab" aria-selected="false">
-            Fase 4 • Escala & Otimização
-          </button>
-        </div>
-
-        <!-- Card dinâmico da Fase selecionada -->
-        <div class="fase-display-card" id="fase-card-box">
-          <div class="fase-card-accent-bar" id="fase-accent-bar"></div>
-
-          <div class="fase-meta-header">
-            <div>
-              <span class="fase-badge-tag" id="fase-tag-label">FASE 1</span>
-              <h3 class="fase-title-main" id="fase-title">Setup das Lojas</h3>
-              <div class="fase-channels-list" id="fase-channels-container">
-                <span class="fase-ch-pill">Shopee</span>
-                <span class="fase-ch-pill">Mercado Livre</span>
-                <span class="fase-ch-pill">TikTok Shop</span>
-              </div>
-            </div>
-            <div class="fase-badge-time" id="fase-timeframe">
-              Semanas 1 a 2
-            </div>
+      <div class="mockup-anuncio-wrapper reveal-item" style="transition-delay: 0.3s;">
+        <div class="mockup-frame mockup-shopee mockup-anuncio-shopee">
+          <div class="mockup-topbar">
+            <span>Shopee • Página do Anúncio</span>
           </div>
-
-          <!-- Lista de Entregas da Fase -->
-          <ul class="fase-tasks-list" id="fase-tasks-list">
-            <li class="fase-accordion-item is-open">
-              <button type="button" class="fase-accordion-btn" aria-expanded="true" aria-controls="step-panel-1">
-                <span class="fase-accordion-left">
-                  <span class="fase-accordion-num" style="background:#FF6A00;">1</span>
-                  <span class="fase-accordion-title">Abertura e configuração das contas na Shopee, Mercado Livre e TikTok Shop</span>
-                </span>
-                <span class="fase-accordion-chevron" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </span>
-              </button>
-              <div class="fase-accordion-panel" id="step-panel-1">
-                <div class="fase-detail-box">
-                  <div class="fase-detail-label">Documentos necessários:</div>
-                  <ul class="fase-detail-items">
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>CNPJ</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Inscrição estadual</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Endereço</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Contrato Social</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Cadastro Nacional da Pessoa Jurídica</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Nome do Sócio</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>CPF</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Data de nascimento</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Foto do RG ou CNH frente e verso</li>
-                  </ul>
-                </div>
-              </div>
-            </li>
-
-            <li class="fase-accordion-item">
-              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-2">
-                <span class="fase-accordion-left">
-                  <span class="fase-accordion-num" style="background:#FF6A00;">2</span>
-                  <span class="fase-accordion-title">Definição da identidade visual e materiais da loja</span>
-                </span>
-                <span class="fase-accordion-chevron" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </span>
-              </button>
-              <div class="fase-accordion-panel" id="step-panel-2">
-                <div class="fase-detail-box">
-                  <div class="fase-detail-label">Materiais e definições:</div>
-                  <ul class="fase-detail-items">
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Escolha de banners e capas</li>
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Cores para divulgações de vídeos</li>
-                  </ul>
-                </div>
-              </div>
-            </li>
-
-            <li class="fase-accordion-item">
-              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-3">
-                <span class="fase-accordion-left">
-                  <span class="fase-accordion-num" style="background:#FF6A00;">3</span>
-                  <span class="fase-accordion-title">Cadastro de dados bancários</span>
-                </span>
-                <span class="fase-accordion-chevron" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </span>
-              </button>
-              <div class="fase-accordion-panel" id="step-panel-3">
-                <div class="fase-detail-box">
-                  <div class="fase-detail-label">Dados de recebimento:</div>
-                  <ul class="fase-detail-items">
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Conta bancária em que cairá o dinheiro das vendas</li>
-                  </ul>
-                </div>
-              </div>
-            </li>
-
-            <li class="fase-accordion-item">
-              <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-4">
-                <span class="fase-accordion-left">
-                  <span class="fase-accordion-num" style="background:#FF6A00;">4</span>
-                  <span class="fase-accordion-title">Conexão com sistema</span>
-                </span>
-                <span class="fase-accordion-chevron" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </span>
-              </button>
-              <div class="fase-accordion-panel" id="step-panel-4">
-                <div class="fase-detail-box">
-                  <div class="fase-detail-label">Integração operacional:</div>
-                  <ul class="fase-detail-items">
-                    <li><span class="fase-detail-dot" style="background:#FF6A00;"></span>Conectar as plataformas no sistema da EWM para atualização de estoque e importação dos pedidos</li>
-                  </ul>
-                </div>
-              </div>
-            </li>
-          </ul>
-
-          <div class="fase-footer-info" id="fase-footer-info">
-            <span>🎯 <strong>Objetivo da etapa:</strong> Garantir a infraestrutura 100% pronta e homologada para iniciar a comercialização sem pendências.</span>
-            <span style="font-weight:700; color:#F4F4F5;" id="fase-progress-label">Etapa 1 de 4</span>
+          <div class="mockup-anuncio-screen">
+            <img src="anuncio_shopee.png" alt="Prévia de como ficará o anúncio da EWM na Shopee" class="mockup-img">
           </div>
         </div>
       </div>
@@ -1571,7 +1663,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         color: '#FF6A00',
         channels: ['Shopee', 'Mercado Livre', 'TikTok Shop'],
         objective: 'Garantir a infraestrutura 100% homologada e pronta para iniciar a comercialização sem pendências.',
-        progressText: 'Etapa 1 de 4',
+        progressText: 'Etapa 1 de 3',
         steps: [
           {
             title: 'Abertura e configuração das contas na Shopee, Mercado Livre e TikTok Shop',
@@ -1619,7 +1711,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         color: '#F7C600',
         channels: ['Curva ABC', 'Margens Seguras', 'Kits & Combos'],
         objective: 'Subir o catálogo com atratividade máxima e precificação matemática por canal para proteger as margens.',
-        progressText: 'Etapa 2 de 4',
+        progressText: 'Etapa 2 de 3',
         steps: [
           {
             title: 'Cadastro dos produtos com fotos e descrição',
@@ -1651,30 +1743,42 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       },
       fase3: {
         tag: 'FASE 3',
-        title: 'Primeiras Vendas',
-        timeframe: 'Meses 2 a 3',
+        title: 'Divulgação & Tráfego',
+        subtitle: 'Levar a EWM para mais pessoas nos três canais, com afiliados e conteúdo orgânico — sem investimento em anúncios',
+        timeframe: 'Semanas 5 em diante',
         color: '#FF3B83',
-        channels: ['Shopee Ads', 'Mercado Livre Ads', 'TikTok Creators'],
-        objective: 'Gerar tração inicial de pedidos, acumular primeiras avaliações positivas e assegurar reputação verde.',
-        progressText: 'Etapa 3 de 4',
-        tasks: [
-          'Publicação dos primeiros anúncios e campanhas',
-          'Atendimento a clientes e pós-venda',
-          'Ajustes de preço e catálogo com base nos primeiros resultados'
-        ]
-      },
-      fase4: {
-        tag: 'FASE 4',
-        title: 'Escala e Otimização',
-        timeframe: 'Meses 4 a 6',
-        color: '#FF6A00',
-        channels: ['Afiliados TikTok', 'Full / Fulfillment', 'Relatórios Mensais'],
-        objective: 'Alavancar o faturamento com campanhas pagas e expansão de afiliados, otimizando custos e giro.',
-        progressText: 'Etapa 4 de 4',
-        tasks: [
-          'Escala de campanhas pagas e parcerias com afiliados (TikTok)',
-          'Relatórios mensais de resultados',
-          'Otimização contínua de preço, catálogo e operação'
+        channels: ['Programa de Afiliados', 'TikTok Orgânico', 'Shopee Vídeos', 'Tráfego Orgânico'],
+        objective: 'Levar a EWM para mais pessoas nos três canais, com afiliados e conteúdo orgânico — sem investimento em anúncios',
+        progressText: 'Etapa 3 de 3',
+        steps: [
+          {
+            title: 'Programa de afiliados',
+            label: 'O que precisa ser feito:',
+            details: [
+              'Cadastrar os produtos no programa de afiliados da Shopee e Mercado Livre para que afiliados e criadores de conteúdo possam divulgar.'
+            ]
+          },
+          {
+            title: 'Conteúdo no TikTok',
+            label: 'O que precisa ser feito:',
+            details: [
+              'Produzir vídeos mostrando os produtos em uso, postando com frequência para atrair seguidores e tráfego orgânico.'
+            ]
+          },
+          {
+            title: 'Shopee Vídeos e conteúdo nos marketplaces',
+            label: 'O que precisa ser feito:',
+            details: [
+              'Criar vídeos e fotos bem produzidos dentro da Shopee e do Mercado Livre, aproveitando os espaços gratuitos que as plataformas oferecem para as lojas.'
+            ]
+          },
+          {
+            title: 'Análise e otimização',
+            label: 'O que precisa ser feito:',
+            details: [
+              'Acompanhar visualizações, seguidores e vendas de cada conteúdo, repetindo o que funciona e ajustando o que não traz resultado.'
+            ]
+          }
         ]
       }
     };
@@ -1704,6 +1808,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 
       const tagEl = document.getElementById('fase-tag-label');
       const titleEl = document.getElementById('fase-title');
+      const subtitleEl = document.getElementById('fase-subtitle');
       const timeEl = document.getElementById('fase-timeframe');
       const accentBarEl = document.getElementById('fase-accent-bar');
       const channelsEl = document.getElementById('fase-channels-container');
@@ -1716,6 +1821,15 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         tagEl.style.color = data.color === '#F7C600' ? '#FFD54F' : data.color;
       }
       if (titleEl) titleEl.textContent = data.title;
+      if (subtitleEl) {
+        if (data.subtitle) {
+          subtitleEl.textContent = data.subtitle;
+          subtitleEl.style.display = 'block';
+        } else {
+          subtitleEl.textContent = '';
+          subtitleEl.style.display = 'none';
+        }
+      }
       if (timeEl) timeEl.textContent = data.timeframe;
       if (accentBarEl) accentBarEl.style.background = data.color;
 
@@ -1740,8 +1854,8 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                 .join('');
 
               return `
-                <li class="fase-accordion-item ${isFirst ? 'is-open' : ''}">
-                  <button type="button" class="fase-accordion-btn" aria-expanded="${isFirst ? 'true' : 'false'}" aria-controls="step-panel-${phaseKey}-${num}">
+                <li class="fase-accordion-item">
+                  <button type="button" class="fase-accordion-btn" aria-expanded="false" aria-controls="step-panel-${phaseKey}-${num}">
                     <span class="fase-accordion-left">
                       <span class="fase-accordion-num" style="background:${data.color}; color:${data.color === '#F7C600' ? '#261C00' : '#FFFFFF'};">${num}</span>
                       <span class="fase-accordion-title">${step.title}</span>
@@ -1789,103 +1903,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       if (progressEl) progressEl.textContent = data.progressText;
     }
 
-    // Configurações das imagens para conversão permanente e embutimento via Data URI base64
-    const storeImageConfigs = [
-      {
-        id: 'mockup-img-tiktok',
-        storageKey: 'ewm_b64_tiktok_shop_live_v1',
-        mimeType: 'image/jpeg',
-        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/jpg/Screenshot-20260925-161105-TikTok.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T225547Z&X-Amz-Expires=3600&X-Amz-Signature=bb97fa2cc647e45b026630d349168dea67b0697378737de2abb3b57eb8729816&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
-      },
-      {
-        id: 'mockup-img-meli',
-        storageKey: 'ewm_b64_meli_shop_live_v1',
-        mimeType: 'image/png',
-        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/png/adapta-image-1790297001071-3.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T225547Z&X-Amz-Expires=3600&X-Amz-Signature=a0c0d806249486a98757d57e7256d4b572521e9d8cd9ec9de41fd5dfb29bcd3b&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
-      },
-      {
-        id: 'mockup-img-shopee',
-        storageKey: 'ewm_b64_shopee_shop_live_v1',
-        mimeType: 'image/png',
-        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/png/adapta-image-1790297007424-4.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T225547Z&X-Amz-Expires=3600&X-Amz-Signature=b7ea34a442760f4e908862242abe6c3bc8fc951b07ae25f49b42211aaf93c108&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
-      },
-      {
-        id: 'mockup-img-tiktok-profile',
-        storageKey: 'ewm_b64_tiktok_profile_v2',
-        mimeType: 'image/png',
-        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/png/83867.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T224713Z&X-Amz-Expires=3600&X-Amz-Signature=61942747ffc521d23e63b9bf1ace8b76a85d879be6811ac3ed2c1a098a9114e3&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
-      },
-      {
-        id: 'mockup-img-shopee-videos',
-        storageKey: 'ewm_b64_shopee_videos_v2',
-        mimeType: 'image/png',
-        url: 'https://adapta-one-prod.s3.sa-east-1.amazonaws.com/ehlissonoliveira%40gmail.com/png/adapta-image-1790363911351-1.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA3FLD6RMYLYFE2L2Q%2F20260925%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260925T224713Z&X-Amz-Expires=3600&X-Amz-Signature=61942747ffc521d23e63b9bf1ace8b76a85d879be6811ac3ed2c1a098a9114e3&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'
-      }
-    ];
-
-    function embedStoreImagesAsBase64() {
-      storeImageConfigs.forEach(item => {
-        const el = document.getElementById(item.id);
-        if (!el) return;
-
-        // 1. Carrega imediatamente o Base64 Data URI se já persistido localmente
-        try {
-          const cached = localStorage.getItem(item.storageKey);
-          if (cached && cached.startsWith('data:image/') && cached.length > 500) {
-            el.src = cached;
-            return;
-          }
-        } catch (e) {}
-
-        // 2. Busca a imagem na URL fornecida e converte diretamente para Base64 Data URI
-        fetch(item.url)
-          .then(res => {
-            if (!res.ok) throw new Error('Status ' + res.status);
-            return res.blob();
-          })
-          .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64Data = reader.result;
-              if (base64Data && typeof base64Data === 'string' && base64Data.startsWith('data:image/')) {
-                el.src = base64Data;
-                try {
-                  localStorage.setItem(item.storageKey, base64Data);
-                } catch (err) {}
-              }
-            };
-            reader.readAsDataURL(blob);
-          })
-          .catch(() => {
-            // Conversão de contingência via Canvas preservando proporção e integridade
-            const tempImg = new Image();
-            tempImg.crossOrigin = 'anonymous';
-            tempImg.onload = () => {
-              try {
-                const cvs = document.createElement('canvas');
-                cvs.width = tempImg.naturalWidth;
-                cvs.height = tempImg.naturalHeight;
-                const ctx = cvs.getContext('2d');
-                ctx.drawImage(tempImg, 0, 0);
-                const format = item.mimeType || 'image/png';
-                const b64 = cvs.toDataURL(format);
-                if (b64 && b64.startsWith('data:image/') && b64.length > 500) {
-                  el.src = b64;
-                  try {
-                    localStorage.setItem(item.storageKey, b64);
-                  } catch (e) {}
-                }
-              } catch (err) {}
-            };
-            tempImg.src = item.url;
-          });
-      });
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-      // Converte e embute imediatamente as imagens em base64
-      embedStoreImagesAsBase64();
-
       // Inicialização dos acordeões da Fase 1 carregada por padrão
       const initialTasksList = document.getElementById('fase-tasks-list');
       if (initialTasksList) {
@@ -1906,6 +1924,29 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           updatePhaseDisplay(phaseKey);
         });
       });
+
+      // Scroll Reveal com Intersection Observer API
+      const previaSection = document.getElementById('previa-anuncio-shopee');
+      if (previaSection && 'IntersectionObserver' in window) {
+        // Ativa estilos de revelação apenas após confirmar suporte a Intersection Observer
+        previaSection.classList.add('reveal-ready');
+        const revealElements = previaSection.querySelectorAll('.reveal-item');
+
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-revealed');
+              // Garante que o efeito ocorra uma única vez
+              observer.unobserve(entry.target);
+            }
+          });
+        }, {
+          threshold: 0.12,
+          rootMargin: '0px 0px -40px 0px'
+        });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+      }
 
       // Approval Button interaction
       const btnAprovar = document.getElementById('btn-aprovar');
