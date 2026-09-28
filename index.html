@@ -404,6 +404,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
     }
     .ch-card {
       background: #FFFFFF;
+      color: #1E232A;
       border-radius: var(--radius, 14px);
       border-top: 6px solid #ccc;
       box-shadow: 0 8px 20px rgba(0,0,0,0.05);
@@ -419,12 +420,46 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
       margin-bottom: 1rem;
     }
     .ch-header h3 {
       margin: 0;
-      font-size: 1.35rem;
-      font-weight: 800;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    /* Badges com alto contraste e legibilidade para os nomes das plataformas */
+    .ch-brand-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      max-width: 100%;
+      box-sizing: border-box;
+      transition: transform 0.2s ease;
+    }
+    .ch-brand-badge:hover {
+      transform: translateY(-1px);
+    }
+    .ch-brand-badge.badge-shopee {
+      background-color: #EE4D2D;
+      color: #FFFFFF !important;
+    }
+    .ch-brand-badge.badge-meli {
+      background-color: #FFE600;
+      color: #2D3277 !important;
+    }
+    .ch-brand-badge.badge-tiktok {
+      background-color: #010101;
+      color: #FFFFFF !important;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .ch-badge {
       font-size: 0.75rem;
@@ -1280,10 +1315,14 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       .ch-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.4rem;
+        gap: 0.6rem;
       }
       .ch-header h3 {
-        font-size: 1.2rem;
+        font-size: 1rem;
+      }
+      .ch-brand-badge {
+        font-size: 1.15rem;
+        padding: 6px 12px;
       }
       .ch-card ul {
         padding-left: 1rem;
@@ -1606,7 +1645,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         <!-- Mercado Livre -->
         <article class="ch-card meli">
           <div class="ch-header">
-            <h3>Mercado Livre</h3>
+            <h3><span class="ch-brand-badge badge-meli">Mercado Livre</span></h3>
             <span class="ch-badge ch-badge-meli">Maior Ticket Médio</span>
           </div>
           <ul>
@@ -1619,7 +1658,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         <!-- Shopee -->
         <article class="ch-card shopee">
           <div class="ch-header">
-            <h3>Shopee</h3>
+            <h3><span class="ch-brand-badge badge-shopee">Shopee</span></h3>
             <span class="ch-badge ch-badge-shopee">Alto Volume</span>
           </div>
           <ul>
@@ -1633,7 +1672,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         <!-- TikTok Shop -->
         <article class="ch-card tiktok">
           <div class="ch-header">
-            <h3>TikTok Shop</h3>
+            <h3><span class="ch-brand-badge badge-tiktok">TikTok Shop</span></h3>
             <span class="ch-badge ch-badge-tiktok">Viral e Vídeos</span>
           </div>
           <ul>
